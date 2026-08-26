@@ -1,8 +1,14 @@
 # manuscript-proofreading — cross-platform install guide
 
-Final-stage proofreading of an accepted medical manuscript (numerical/statistical
-consistency, tables/figures, Methods–Results agreement, ACP house style) with
-PDF-ready annotation comments. The skill follows the open **Agent Skills** format
+Final-stage proofreading skill for manuscripts accepted by the **Annals of
+Coloproctology (ACP)**: numerical/statistical consistency, tables/figures,
+Methods–Results agreement, and ACP house style, with PDF-ready annotation
+comments.
+
+Source: https://github.com/kasaha11/manuscript-proofreading-skill
+Created by **Soo Young Lee** (Division of Colorectal Surgery, Chonnam National
+University Medical School); revised by **Sanghee Kang** (Korea University
+College of Medicine). The skill follows the open **Agent Skills** format
 (`SKILL.md` + `scripts/` + `references/`), so the same folder works across agents.
 
 ```

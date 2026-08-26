@@ -5,6 +5,8 @@ license: MIT
 compatibility: Requires Python 3.8+ for scripts/verify_table.py and the ability to view PDF pages as images (for figure/table inspection). Works in Claude Code, Claude.ai, OpenAI Codex, and any Agent Skills-compatible agent; see README.md for ChatGPT Custom GPT setup.
 metadata:
   version: "2.0.0"
+  authors: "Soo Young Lee (Chonnam National University, Colorectal Surgery; original); Sanghee Kang (Korea University; revision)"
+  repository: https://github.com/kasaha11/manuscript-proofreading-skill
   domain: medical-publishing
   house-style-default: Annals of Coloproctology
 ---

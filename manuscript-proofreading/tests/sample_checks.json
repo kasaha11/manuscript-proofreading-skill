@@ -1,0 +1,58 @@
+{
+  "_comment": "Test fixture for scripts/verify_table.py. Each check carries an '_expect' field (MATCH/FLAG) that the script ignores and tests/run_tests.py asserts. Values are invented for testing only.",
+  "checks": [
+    {"_expect": "MATCH", "type": "percentage", "location": "T1 exact", "numerator": 120, "denominator": 300, "reported_pct": 40.0},
+    {"_expect": "MATCH", "type": "percentage", "location": "T1 string with %", "numerator": 120, "denominator": 300, "reported_pct": "40.0%"},
+    {"_expect": "MATCH", "type": "percentage", "location": "T1 integer-rounded 1/3", "numerator": 1, "denominator": 3, "reported_pct": "33"},
+    {"_expect": "MATCH", "type": "percentage", "location": "T1 one-decimal 2/3", "numerator": 2, "denominator": 3, "reported_pct": "66.7"},
+    {"_expect": "FLAG",  "type": "percentage", "location": "T1 wrong pct", "numerator": 118, "denominator": 300, "reported_pct": "41.2"},
+    {"_expect": "FLAG",  "type": "percentage", "location": "T1 zero denominator", "numerator": 5, "denominator": 0, "reported_pct": 10},
+    {"_expect": "FLAG",  "type": "percentage", "location": "T1 unparseable", "numerator": 5, "denominator": 10, "reported_pct": "fifty"},
+
+    {"_expect": "MATCH", "type": "subgroup_sum", "location": "T1 stage", "parts": {"I": 50, "II": 80, "III": 90, "IV": 94}, "reported_total": 314},
+    {"_expect": "FLAG",  "type": "subgroup_sum", "location": "T1 stage off by one", "parts": {"I": 50, "II": 80, "III": 90, "IV": 95}, "reported_total": 314},
+    {"_expect": "MATCH", "type": "subgroup_sum", "location": "T1 float parts", "parts": [10.5, 20.5], "reported_total": 31},
+    {"_expect": "FLAG",  "type": "subgroup_sum", "location": "T1 float parts wrong", "parts": [10.5, 20.5], "reported_total": 30},
+    {"_expect": "MATCH", "type": "subgroup_sum", "location": "T1 string counts", "parts": ["1,200", "300"], "reported_total": "1,500"},
+
+    {"_expect": "MATCH", "type": "ci_shape", "location": "T3 ok", "estimate": 1.45, "ci_lower": 0.98, "ci_upper": 2.15},
+    {"_expect": "FLAG",  "type": "ci_shape", "location": "T3 swapped bounds", "estimate": 1.45, "ci_lower": 2.15, "ci_upper": 0.98},
+    {"_expect": "FLAG",  "type": "ci_shape", "location": "T3 estimate outside", "estimate": 3.0, "ci_lower": 0.98, "ci_upper": 2.15},
+
+    {"_expect": "MATCH", "type": "ci_consistency", "location": "T3 ns CI ns P", "ci_lower": 0.98, "ci_upper": 2.15, "reported_p": 0.07},
+    {"_expect": "FLAG",  "type": "ci_consistency", "location": "T3 ns CI sig P", "ci_lower": 0.98, "ci_upper": 2.15, "reported_p": 0.03},
+    {"_expect": "FLAG",  "type": "ci_consistency", "location": "T3 ns CI with 'P<0.001' prefix", "ci_lower": 0.9, "ci_upper": 2.0, "reported_p": "P<0.001"},
+    {"_expect": "MATCH", "type": "ci_consistency", "location": "T3 sig CI <0.001", "ci_lower": 1.2, "ci_upper": 2.0, "reported_p": "<0.001"},
+    {"_expect": "MATCH", "type": "ci_consistency", "location": "T3 indeterminate <0.1", "ci_lower": 1.2, "ci_upper": 2.0, "reported_p": "<0.1"},
+    {"_expect": "MATCH", "type": "ci_consistency", "location": "T3 indeterminate >0.01", "ci_lower": 0.9, "ci_upper": 2.0, "reported_p": ">0.01"},
+    {"_expect": "MATCH", "type": "ci_consistency", "location": "T3 borderline 0.05", "ci_lower": 1.01, "ci_upper": 2.0, "reported_p": 0.052},
+    {"_expect": "MATCH", "type": "ci_consistency", "location": "T3 difference measure", "ci_lower": -2.0, "ci_upper": 3.0, "reported_p": 0.4, "measure": "difference"},
+    {"_expect": "FLAG",  "type": "ci_consistency", "location": "T3 difference sig CI ns P", "ci_lower": 0.5, "ci_upper": 3.0, "reported_p": 0.4, "measure": "difference"},
+
+    {"_expect": "MATCH", "type": "p_range", "location": "T3 p ok", "reported_p": "0.045"},
+    {"_expect": "FLAG",  "type": "p_range", "location": "T3 p >1", "reported_p": "1.20"},
+    {"_expect": "MATCH", "type": "p_range", "location": "T3 p bound", "reported_p": "<0.001"},
+
+    {"_expect": "MATCH", "type": "rounding_consistency", "location": "Abstract vs T1", "value_a": "45.2", "location_a": "Abstract", "value_b": "45", "location_b": "Table 1"},
+    {"_expect": "FLAG",  "type": "rounding_consistency", "location": "Abstract vs T1 mismatch", "value_a": "45.2", "location_a": "Abstract", "value_b": "44.8", "location_b": "Table 1"},
+    {"_expect": "MATCH", "type": "rounding_consistency", "location": "numeric explicit tol", "value_a": 45.2, "value_b": 44.8, "tolerance": 0.5},
+
+    {"_expect": "MATCH", "type": "p_value_format", "location": "fmt ok", "reported_p": "0.030"},
+    {"_expect": "FLAG",  "type": "p_value_format", "location": "fmt 2 decimals", "reported_p": "0.03"},
+    {"_expect": "FLAG",  "type": "p_value_format", "location": "fmt literal 0", "reported_p": "0"},
+    {"_expect": "FLAG",  "type": "p_value_format", "location": "fmt 0.0000", "reported_p": "0.0000"},
+    {"_expect": "FLAG",  "type": "p_value_format", "location": "fmt 1.000", "reported_p": "1.000"},
+    {"_expect": "MATCH", "type": "p_value_format", "location": "fmt inequality", "reported_p": "<0.001"},
+    {"_expect": "MATCH", "type": "p_value_format", "location": "fmt with P prefix", "reported_p": "P=0.030"},
+
+    {"_expect": "MATCH", "type": "percentage_format", "location": "pct fmt ok", "reported_pct": "33.3", "denominator": 300},
+    {"_expect": "MATCH", "type": "percentage_format", "location": "pct fmt string denom", "reported_pct": "33.3%", "denominator": "300"},
+    {"_expect": "FLAG",  "type": "percentage_format", "location": "pct fmt trailing .0", "reported_pct": "50.0", "denominator": 300},
+    {"_expect": "MATCH", "type": "percentage_format", "location": "pct fmt whole", "reported_pct": "50", "denominator": 300},
+    {"_expect": "FLAG",  "type": "percentage_format", "location": "pct fmt 2 decimals small denom", "reported_pct": "33.33", "denominator": 300},
+    {"_expect": "MATCH", "type": "percentage_format", "location": "pct fmt 2 decimals big denom", "reported_pct": "33.33", "denominator": 12000},
+
+    {"_expect": "FLAG",  "type": "unknown_type", "location": "bad type"},
+    {"_expect": "FLAG",  "type": "percentage", "location": "missing field", "numerator": 1}
+  ]
+}

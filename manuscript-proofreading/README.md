@@ -11,6 +11,21 @@ University Medical School); revised by **Sanghee Kang** (Korea University
 College of Medicine). The skill follows the open **Agent Skills** format
 (`SKILL.md` + `scripts/` + `references/`), so the same folder works across agents.
 
+**Default execution (v2.1.0+):** six specialist reviewer personas — numerical &
+statistical consistency, tables & figures, terminology & clinical direction,
+Methods–Results consistency, front/back matter & references, and general
+proofing & house style — run **in parallel as independent subagents** where the
+host environment supports dispatching them (e.g. Claude Code's `Agent` tool),
+then a coordinator merges, dedupes, and cross-checks their findings into one
+report. Where subagent dispatch isn't available, the same six personas are
+simulated sequentially instead. See `SKILL.md`'s "Execution mode" and "Reviewer
+personas" sections for the full protocol.
+
+**Reference existence verification (v2.2.0+):** the front/back-matter persona
+web-searches (PubMed/CrossRef/Google Scholar/journal site) every numbered
+reference by default and flags entries it can't find or that don't match the
+cited authors/journal/year/volume/pages.
+
 ```
 manuscript-proofreading/
 ├── SKILL.md                      # entry point (Agent Skills standard)
@@ -84,6 +99,18 @@ python3 scripts/verify_table.py --show-schema
 
 ## Changelog
 
+- **2.2.0** — persona 5 (Front/Back Matter & References Reviewer) now verifies
+  reference existence via web search **by default** (PubMed/CrossRef/Google
+  Scholar/journal site), flagging not-found or mismatched citations as A2
+  (verification required); previously this only ran when the editor explicitly
+  asked.
+- **2.1.0** — default execution mode is now six parallel specialist reviewer
+  personas (numerical/statistical, tables & figures, terminology & direction,
+  Methods–Results, front/back matter & references, general proofing & house style)
+  dispatched as concurrent subagents where the environment supports it (Claude
+  Code's `Agent` tool, Codex's subagent mechanism), with a coordinator merge/dedupe
+  pass and a sequential fallback for environments without subagent dispatch (e.g.
+  the ChatGPT Custom GPT path).
 - **2.0.0** — checker no longer aborts on a malformed item (`FLAG [Input error]`);
   accepts printed strings (`"40.0%"`, `"P<0.001"`, `"1,234"`); precision-aware
   tolerances (no false flag on integer-rounded %); indeterminate P bounds

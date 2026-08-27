@@ -4,7 +4,7 @@ description: Final-stage proofreading of an ACCEPTED medical manuscript (not pee
 license: MIT
 compatibility: Requires Python 3.8+ for scripts/verify_table.py and the ability to view PDF pages as images (for figure/table inspection). Works in Claude Code, Claude.ai, OpenAI Codex, and any Agent Skills-compatible agent; see README.md for ChatGPT Custom GPT setup.
 metadata:
-  version: "2.0.0"
+  version: "2.2.0"
   authors: "Soo Young Lee (Chonnam National University, Colorectal Surgery; original); Sanghee Kang (Korea University; revision)"
   repository: https://github.com/kasaha11/manuscript-proofreading-skill
   domain: medical-publishing
@@ -54,7 +54,69 @@ only stop to ask if the manuscript file itself is missing or unreadable:
   instead and do not apply the ACP file. If the editor says to skip house-style
   checking entirely, only flag inconsistencies **within** the manuscript.
 
-## Working rules (non-negotiable, apply throughout)
+## Execution mode: parallel reviewer personas (default)
+
+Run this skill as **six specialist personas checking in parallel**, then merge, rather
+than one agent reading the manuscript start to finish. This catches more because each
+persona holds only its own checklist in mind instead of all nine scope areas at once,
+and it's faster because the personas don't wait on each other.
+
+**If your environment can dispatch independent sub-tasks** (Claude Code's `Agent`
+tool, Codex's subagent mechanism, or equivalent) — the default and preferred path:
+
+1. Confirm settings (above) once, as the coordinator.
+2. In a **single batch**, dispatch one subagent per persona listed in
+   "Reviewer personas" below. Give each subagent, verbatim:
+   - The manuscript file path(s) and any supplementary files.
+   - This skill's absolute directory path (for `scripts/verify_table.py` and
+     `references/acp_house_style.md`).
+   - The confirmed comment language and house style (or "skip house style").
+   - The full "Working rules," "What NOT to do," and "Priority and certainty"
+     sections below — every persona is bound by the same rules.
+   - Only its own scope text, quoted from "Reviewer personas" below — not the other
+     five personas' scope.
+   - The instruction to return **only** a list of candidate findings in the format
+     from "Output format" §2 (no summary table, no coverage statement — those are
+     the coordinator's job after merging).
+3. Collect all six subagents' candidate findings.
+4. As coordinator, merge and finalize per "Coordinator merge and final cross-check"
+   below, then produce the single combined output per "Output format."
+
+**If no sub-task dispatch is available** (e.g. the ChatGPT Custom GPT path — see
+`chatgpt/GPT_INSTRUCTIONS.md`), simulate the six personas sequentially instead: work
+through each persona's scope in its own dedicated pass over the manuscript, holding
+only that persona's checklist active, and produce that persona's candidate-finding
+list before moving to the next. Still finish with the coordinator merge step — do not
+skip it just because the passes were sequential.
+
+## Reviewer personas
+
+Each persona owns the "Scope of proofreading" subsection(s) named below and applies
+the shared Working Rules within that scope only.
+
+1. **Numerical & Statistical Consistency Reviewer** — owns *Numerical consistency*
+   and *Statistical consistency*. Must run `scripts/verify_table.py` per Working
+   Rule 1 for every arithmetic and CI/P-value relationship in its scope.
+2. **Tables & Figures Structural Reviewer** — owns *Table structure* and *Figures and
+   graphical abstracts*. Inspects every figure visually, not just extracted text.
+3. **Terminology & Clinical Direction Reviewer** — owns *Terminology and direction*.
+4. **Methods–Results Consistency Reviewer** — owns *Methods–Results consistency*.
+5. **Front/Back Matter & References Reviewer** — owns *Front matter, back matter,
+   and references*, including **reference existence verification** (web search):
+   by default, look up every numbered reference entry (title/authors/journal/year/
+   volume/pages against PubMed, CrossRef, Google Scholar, or the journal's own
+   site) and confirm it resolves to a real, matching publication. See Working
+   Rule 5 and "Front matter, back matter, and references" below for how to flag
+   what you find.
+6. **General Proofing & House Style Reviewer** — owns *General proof errors* and
+   *House style (default: ACP)*. Also runs `verify_table.py`'s `p_value_format` /
+   `percentage_format` checks per Working Rule 1, independently of persona 1's
+   correctness checks — persona 1 checks whether a P-value/CI/percentage is
+   *correct*, this persona checks whether it's *formatted* per house style. The
+   coordinator will see both on the same value where relevant and should not treat
+   that as a duplicate (see below).
+
+## Working rules (non-negotiable, apply throughout — every persona and the coordinator)
 
 1. **Calculate, don't estimate.** Never do this arithmetic mentally. For the check
    types covered by `scripts/verify_table.py` — percentage vs. numerator/denominator,
@@ -90,12 +152,15 @@ only stop to ask if the manuscript file itself is missing or unreadable:
    method, add an analysis, or redesign anything. If a discrepancy can't be resolved
    by clarification alone, label it "Verification required — editor decision" and
    leave the call to the editor.
-4. **Process systematically.** Go table by table, then figure by figure, in document
-   order. Inspect figures and graphical abstracts **visually** — do not rely on
-   extracted text alone for anything visual.
+4. **Process systematically within scope.** Within its own persona's scope, go table
+   by table, then figure by figure, in document order — don't sample or skip around.
+   Inspect figures and graphical abstracts **visually** — do not rely on extracted
+   text alone for anything visual.
 5. **Never fabricate.** No invented values, page numbers, or references. Missing
-   information is reported as missing, not filled in. Do not web-search to verify
-   references unless the editor explicitly asks.
+   information is reported as missing, not filled in. The exception is persona 5's
+   reference-existence check (see "Reviewer personas" and "Front matter, back
+   matter, and references" below), which web-searches by default — everyone else
+   still never web-searches to "fix" or fill in a value.
 
 ## Scope of proofreading
 
@@ -148,8 +213,23 @@ contributions, ORCID, AI-use disclosure; author list/order/affiliations/correspo
 author consistent across title page and metadata; abbreviations defined at first use
 (abstract and main text separately) and in table/figure footnotes; reference in-text
 citation order and duplicates; citation count vs. reference list; obviously malformed
-entries (impossible year, volume/page format). Do not verify reference existence via
-web search unless asked.
+entries (impossible year, volume/page format).
+
+**Reference existence verification (default, persona 5 only)** — web-search every
+numbered reference (PubMed, CrossRef, Google Scholar, or the journal's site) and
+confirm authors/title/journal/year/volume/pages match a real publication:
+- **Not found after a reasonable search**, or the DOI/citation resolves to an
+  unrelated publication → **A2, Verification required** ("please confirm this
+  reference — it could not be located; verify the citation details").
+- **Found, but one or more of authors/year/journal/volume/pages clearly mismatch**
+  the real record → **A2, Verification required**, quoting both the manuscript's
+  citation and what the search found.
+- Do not escalate to A1 on search results alone — a failed or ambiguous search
+  can mean the tool missed it, not that the reference is fabricated; word the PDF
+  comment as a request to verify, never as an accusation.
+- If web search isn't available in your environment (or persona 5 is run
+  without it), state that explicitly in the coverage note instead of skipping
+  silently — don't fabricate a verification result.
 
 **General proof errors** — typos; inconsistent abbreviations/units/decimal places;
 incorrect percentages; spacing; inconsistent terminology; placeholders ("****", "XX",
@@ -223,6 +303,13 @@ Korean example: "해당 수치는 본문의 값과 일치하지 않습니다. �
 
 ## Output format
 
+**In parallel mode, each persona's own output is candidate findings only** — repeat
+format §2 below for each finding it identifies, labeled with its persona name (e.g.
+`P1-1`, `P1-2`, `P6-1`), and stop there. No summary table, no coverage statement — the
+coordinator produces those once, after merging all six personas' candidates, per
+"Coordinator merge and final cross-check" below. What follows is the **final combined
+output** the coordinator delivers to the editor:
+
 **1. Summary table** at the top:
 
 | # | Location | Priority (A1/A2/B) | Certainty | One-line summary |
@@ -268,13 +355,35 @@ Worked example of one finding (values illustrative):
 and supplementary file inspected; state which figures were checked visually; state
 anything unreadable or not provided.
 
-## Final cross-check before answering
+## Coordinator merge and final cross-check
 
-Before finalizing, re-verify: Abstract ↔ Methods ↔ Results ↔ Tables ↔ Figures ↔
-Discussion ↔ Supplementary materials, with particular attention to sample sizes,
-percentages, denominators, cutoff values, P-values, HRs/ORs/CIs, reference groups,
-figure labels, units, study-period dates, inclusion/exclusion counts, and
-outcome/variable definitions. Inspect visual elements directly whenever relevant —
-never rely only on extracted text for tables/figures. If applying ACP house style,
-confirm you've run `p_value_format`/`percentage_format` checks on every P-value and
-percentage encountered, not just the ones already flagged by other checks.
+The coordinator (the agent that dispatched the personas, or — in sequential mode —
+the same agent right after its sixth pass) performs this step once, after all six
+persona outputs are in hand:
+
+1. **Renumber.** Assign final `[N]` numbers across all personas' candidates together,
+   ordered A1 → A2 → B as usual.
+2. **Dedupe same-location, same-issue findings.** Two personas may independently flag
+   the same value (most often persona 1's correctness check and persona 6's
+   house-style notation check landing on the same P-value/percentage/statistic) —
+   this is expected, not a bug (see "Reviewer personas" note on persona 6). Keep both
+   only if they're genuinely two different problems (e.g. the P-value is *both*
+   inconsistent with its CI *and* printed to the wrong number of decimals); otherwise
+   merge into one finding, keep the higher-priority persona's classification, and fold
+   the other's observation into the "Why it matters" text.
+3. **Resolve conflicting priority/certainty calls** on the same finding (rare, but two
+   personas could reasonably weigh the same fact differently) by taking the more
+   urgent priority and the more cautious certainty, not an average.
+4. **Do the cross-scope pass.** Because personas worked their own scope in isolation,
+   re-verify: Abstract ↔ Methods ↔ Results ↔ Tables ↔ Figures ↔ Discussion ↔
+   Supplementary materials, with particular attention to sample sizes, percentages,
+   denominators, cutoff values, P-values, HRs/ORs/CIs, reference groups, figure
+   labels, units, study-period dates, inclusion/exclusion counts, and outcome/variable
+   definitions — this is exactly the kind of cross-cutting inconsistency no single
+   persona's narrow scope would surface. Inspect visual elements directly whenever
+   relevant — never rely only on extracted text for tables/figures. If applying ACP
+   house style, confirm `p_value_format`/`percentage_format` checks were run (by
+   persona 6) on every P-value and percentage encountered, not just the ones already
+   flagged.
+5. **Assemble the coverage statement** from all six personas' notes on what they
+   inspected, unreadable, or not provided (§3 above), deduplicated.

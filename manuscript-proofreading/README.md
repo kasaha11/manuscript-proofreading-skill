@@ -105,6 +105,11 @@ python3 scripts/verify_table.py --show-schema
 
 ## Changelog
 
+- **2.3.1** — the summary table and each detailed finding now carry a
+  **Flagged by** field listing every persona that raised it (`P1`, `P1+P6`, …;
+  `Coord` for coordinator cross-scope findings), so the editor can see which
+  specialist pass surfaced each issue. Persona codes are preserved through
+  dedupe/merge.
 - **2.3.0** — the coordinator now saves the final merged report to
   `<manuscript-basename>_proofreading.md` beside the manuscript by default (with a
   header: filename, date, skill version, house style, comment language), in

@@ -4,7 +4,7 @@ description: Final-stage proofreading of an ACCEPTED medical manuscript (not pee
 license: MIT
 compatibility: Requires Python 3.8+ for scripts/verify_table.py and the ability to view PDF pages as images (for figure/table inspection). Works in Claude Code, Claude.ai, OpenAI Codex, and any Agent Skills-compatible agent; see README.md for ChatGPT Custom GPT setup.
 metadata:
-  version: "2.3.0"
+  version: "2.3.1"
   authors: "Soo Young Lee (Chonnam National University, Colorectal Surgery; original); Sanghee Kang (Korea University; revision)"
   repository: https://github.com/kasaha11/manuscript-proofreading-skill
   domain: medical-publishing
@@ -316,14 +316,20 @@ output** the coordinator delivers to the editor:
 
 **1. Summary table** at the top:
 
-| # | Location | Priority (A1/A2/B) | Certainty | One-line summary |
-|---|----------|--------------------|-----------|-------------------|
+| # | Location | Priority (A1/A2/B) | Certainty | Flagged by | One-line summary |
+|---|----------|--------------------|-----------|------------|-------------------|
+
+"Flagged by" lists every persona that independently raised the finding, as short
+codes (`P1`, `P1+P6`, `P1+P2+P4+P6`, …; `Coord` for findings the coordinator added
+in the cross-scope pass). In sequential-simulation mode use the same codes for
+whichever pass surfaced it.
 
 **2. Detailed findings**, ordered A1 → A2 → B, each as:
 
 > **[N]. Short description**
 > **Priority:** A1 / A2 / B
 > **Certainty:** Clear error / Likely error / Verification required
+> **Flagged by:** P1 (Numerical & Statistical) + P6 (Style) — code plus short persona name
 > **Comment location:** exact PDF page and location
 >
 > **As written in the manuscript:**
@@ -343,6 +349,7 @@ Worked example of one finding (values illustrative):
 > **[1]. Table 3 P-value contradicts its 95% CI**
 > **Priority:** A2
 > **Certainty:** Verification required
+> **Flagged by:** P1 (Numerical & Statistical)
 > **Comment location:** PDF p. 5 (printed p. 213), Table 3, row "Age ≥65", P column
 >
 > **As written in the manuscript:**
@@ -373,8 +380,10 @@ persona outputs are in hand:
    this is expected, not a bug (see "Reviewer personas" note on persona 6). Keep both
    only if they're genuinely two different problems (e.g. the P-value is *both*
    inconsistent with its CI *and* printed to the wrong number of decimals); otherwise
-   merge into one finding, keep the higher-priority persona's classification, and fold
-   the other's observation into the "Why it matters" text.
+   merge into one finding, keep the higher-priority persona's classification, fold
+   the other's observation into the "Why it matters" text, and list **every** persona
+   that raised it in "Flagged by" (e.g. `P1+P6`) — never drop a persona code when
+   merging. Findings you add yourself in step 4 are `Coord`.
 3. **Resolve conflicting priority/certainty calls** on the same finding (rare, but two
    personas could reasonably weigh the same fact differently) by taking the more
    urgent priority and the more cautious certainty, not an average.

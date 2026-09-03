@@ -14,7 +14,7 @@ PDF-ready annotation comments.
 - 플랫폼별 설치 방법: [`manuscript-proofreading/README.md`](manuscript-proofreading/README.md)
 - 전체 변경 이력: [`manuscript-proofreading/README.md` § Changelog](manuscript-proofreading/README.md#changelog)
 
-## How it works (v2.2.0+)
+## How it works (v2.3.0+)
 
 기본 실행 방식은 **6개 전문 페르소나의 병렬 검토**입니다 — 숫자·통계 일관성, 표/그림 구조,
 용어·임상적 방향성, Methods–Results 일치성, 전/후반부 및 참고문헌, 일반 교정·ACP 하우스스타일을
@@ -28,12 +28,16 @@ PDF-ready annotation comments.
 전/후반부·참고문헌 담당 페르소나는 기본적으로 참고문헌 23건 등 모든 항목을 웹 검색(PubMed/
 CrossRef/Google Scholar 등)으로 대조하여 실존 여부와 서지정보 일치를 확인합니다.
 
+검토가 끝나면 최종 병합 리포트를 대화창에 보여주는 것과 동시에 원고 PDF와 같은 폴더에
+`<원고파일명>_proofreading.md` 파일로 저장합니다(기존 파일은 덮어쓰지 않고 `_2`, `_3` 접미사를 붙임).
+파일 쓰기가 불가능한 환경에서는 같은 내용을 Markdown 코드 블록으로 출력합니다.
+
 ## Authors
 
 - **이수영 (Soo Young Lee)** — 전남대학교 의과대학 대장항문외과. 원저자 (initial design and implementation).
 - **강상희 (Sanghee Kang)** — 고려대학교 의과대학. 수정 및 개선 (v2.0.0: checker robustness, tests,
   cross-platform packaging; v2.1.0: parallel reviewer-persona execution; v2.2.0: default
-  reference-existence verification).
+  reference-existence verification; v2.3.0: Markdown report file output).
 
 ## Packaging
 

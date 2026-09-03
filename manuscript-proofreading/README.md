@@ -26,6 +26,12 @@ web-searches (PubMed/CrossRef/Google Scholar/journal site) every numbered
 reference by default and flags entries it can't find or that don't match the
 cited authors/journal/year/volume/pages.
 
+**Markdown report file (v2.3.0+):** the final merged report is saved as
+`<manuscript-basename>_proofreading.md` next to the manuscript PDF (never
+overwriting an existing file), and also shown in the conversation. Where the
+host can't write files (ChatGPT Custom GPT), the report is delivered inline as a
+Markdown code block instead.
+
 ```
 manuscript-proofreading/
 ├── SKILL.md                      # entry point (Agent Skills standard)
@@ -99,6 +105,12 @@ python3 scripts/verify_table.py --show-schema
 
 ## Changelog
 
+- **2.3.0** — the coordinator now saves the final merged report to
+  `<manuscript-basename>_proofreading.md` beside the manuscript by default (with a
+  header: filename, date, skill version, house style, comment language), in
+  addition to showing it in the conversation. Existing files are never overwritten
+  (`_2`, `_3`, … suffix). Environments without file write access deliver the same
+  report inline as a Markdown code block.
 - **2.2.0** — persona 5 (Front/Back Matter & References Reviewer) now verifies
   reference existence via web search **by default** (PubMed/CrossRef/Google
   Scholar/journal site), flagging not-found or mismatched citations as A2

@@ -4,7 +4,7 @@ description: Final-stage proofreading of an ACCEPTED medical manuscript (not pee
 license: MIT
 compatibility: Requires Python 3.8+ for scripts/verify_table.py and the ability to view PDF pages as images (for figure/table inspection). Works in Claude Code, Claude.ai, OpenAI Codex, and any Agent Skills-compatible agent; see README.md for ChatGPT Custom GPT setup.
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
   authors: "Soo Young Lee (Chonnam National University, Colorectal Surgery; original); Sanghee Kang (Korea University; revision)"
   repository: https://github.com/kasaha11/manuscript-proofreading-skill
   domain: medical-publishing
@@ -53,6 +53,10 @@ only stop to ask if the manuscript file itself is missing or unreadable:
   the editor names a different journal or supplies different rules, use those
   instead and do not apply the ACP file. If the editor says to skip house-style
   checking entirely, only flag inconsistencies **within** the manuscript.
+- **Report file:** the final combined report is always saved as a Markdown file
+  next to the manuscript, named `<manuscript-basename>_proofreading.md` (e.g.
+  `ac-2026-00178.pdf` → `ac-2026-00178_proofreading.md`), unless the editor gives a
+  different path. See "Coordinator merge and final cross-check" step 6.
 
 ## Execution mode: parallel reviewer personas (default)
 
@@ -387,3 +391,14 @@ persona outputs are in hand:
    flagged.
 5. **Assemble the coverage statement** from all six personas' notes on what they
    inspected, unreadable, or not provided (§3 above), deduplicated.
+6. **Write the report to a Markdown file (default).** Save the complete final output
+   (settings/assumptions, §1 summary table, §2 detailed findings, §3 coverage
+   statement — exactly what you show the editor, nothing abbreviated) to
+   `<manuscript-basename>_proofreading.md` in the same directory as the manuscript
+   PDF, unless the editor specified another path. Start the file with a short header:
+   manuscript filename, date, skill version, house style applied, comment language.
+   If a file with that name already exists, do not overwrite it — append `_2`, `_3`,
+   … to the basename. Then show the editor the same report in the conversation and
+   state the saved file path on the first line. If your environment cannot write
+   files (e.g. the ChatGPT Custom GPT path), say so and deliver the report inline as
+   a single Markdown code block the editor can save.
